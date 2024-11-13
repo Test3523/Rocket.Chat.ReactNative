@@ -102,7 +102,7 @@ jobs:
             
             github.rest.issues.createComment({
               issue_number: ${{ env.pr_number }},
-              owner: ${{ env.repo_owner }},
+              owner: "${{ env.repo_owner }}",
               repo: context.repo.repo,
               body: comment
             });
