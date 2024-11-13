@@ -104,12 +104,11 @@ jobs:
             `;
             
             github.rest.issues.createComment({
-              issue_number: ${{ env.pr_number }},
-              owner: "${{ env.repo_owner }}",
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: "${{ github.repository_owner }}",
               repo: context.repo.repo,
               body: comment
             });
-
       - name: Commit and push changes
         if: steps.check_changes.outputs.changes == 'true'
         run: |
