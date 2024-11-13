@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write  # Required for commenting on PRs
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -24,6 +24,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
+          
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
@@ -52,7 +53,54 @@ jobs:
           else
             echo "Code format changes detected"
             echo "changes=true" >> $GITHUB_OUTPUT
+
+      - name: Get current branch name
+        id: get-branch
+        if: steps.check_changes.outputs.changes == 'false'
+        run: echo "branch_name=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
+
+      - name: Check for associated PR in parent repository
+        id: check-pr
+        if: steps.check_changes.outputs.changes == 'false'
+        run: |
+          response=$(curl -s "https://api.github.com/repos/${{ env.repo_owner }}/Rocket.Chat.ReactNative/pulls?head=${{ github.actor }}:${{ env.branch_name }}&state=open")
+          
+          if [ "$(echo "$response" | jq length)" -eq 0 ]; then
+            echo "No open pull request associated with branch ${{ env.branch_name }}."
+            exit 1
           fi
+
+          pr_number=$(echo "$response" | jq -r '.[0].number')
+          pr_url=$(echo "$response" | jq -r '.[0].html_url')
+
+          echo "pr_number=$pr_number" >> $GITHUB_ENV
+          echo "pr_url=$pr_url" >> $GITHUB_ENV
+
+      - name: Comment on PR if no changes
+        if: steps.check_changes.outputs.changes == 'false' && steps.check-pr.outcome == 'success'  # Only run if no changes and PR is found
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const comment = `
+              🚀 **Prettier Check Completed** 🚀
+
+              We have scanned your pull request, and after formatting the code with Prettier, no code format changes were detected. 🎉
+
+              This means your code is already in perfect shape and well-formatted! Keep it up! 👏
+
+              ✅ **Summary**:
+              - Prettier found no formatting issues.
+              - Your code is already properly formatted.
+            
+              Feel free to reach out if you have any questions or need further assistance.
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: ${{ env.pr_number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
 
       - name: Commit and push changes
         if: steps.check_changes.outputs.changes == 'true'
@@ -62,15 +110,3 @@ jobs:
           git add .
           git commit -m "chore: format code with Prettier"
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
-
-      - name: Comment on PR if no changes
-        if: steps.check_changes.outputs.changes == 'false'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: ${{ github.event.pull_request.number }},
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "No code format changes detected."
-            })
