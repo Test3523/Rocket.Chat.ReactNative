@@ -17,6 +17,9 @@ jobs:
       contents: write
       pull-requests: write
 
+    env:
+      repo_owner: Test3523
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -67,7 +70,7 @@ jobs:
         run: |
           response=$(curl -s "https://api.github.com/repos/${{ env.repo_owner }}/Rocket.Chat.ReactNative/pulls?head=${{ github.actor }}:${{ env.branch_name }}&state=open")
           
-          if [ "$(echo "$response" | jq length)" -eq 0 ]; then
+          if [ "$(echo "$response" | jq 'type')" != '"array"' ] || [ "$(echo "$response" | jq length)" -eq 0 ]; then
             echo "No open pull request associated with branch ${{ env.branch_name }}."
             exit 1
           fi
