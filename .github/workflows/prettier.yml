@@ -54,3 +54,15 @@ jobs:
           git add .
           git commit -m "chore: format code with Prettier"
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
+
+      - name: Comment on PR if no changes
+        if: steps.check_changes.outputs.changes == 'false'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "No code format changes detected."
+            })
