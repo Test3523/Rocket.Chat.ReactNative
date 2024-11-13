@@ -16,19 +16,12 @@ jobs:
       contents: write
 
     steps:
-      - name: Debug Info
-        run: |
-          echo "Event name: ${{ github.event_name }}"
-          echo "Ref name: ${{ github.ref_name }}"
-          echo "Head ref: ${{ github.head_ref }}"
-          echo "Base ref: ${{ github.base_ref }}"
-          echo "Ref: ${{ github.ref }}"
-
       - name: Checkout code
         uses: actions/checkout@v2
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
-          ref: ${{ github.event.pull_request && github.event.pull_request.head.ref || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -52,16 +45,6 @@ jobs:
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Get current branch name
-        if: steps.check_changes.outputs.changes == 'true'
-        id: branch
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "branch=${{ github.event.pull_request.head.ref }}" >> $GITHUB_OUTPUT
-          else
-            echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Commit and push changes
         if: steps.check_changes.outputs.changes == 'true'
         run: |
@@ -69,4 +52,4 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
           git commit -m "chore: format code with Prettier"
-          git push origin HEAD:${{ steps.branch.outputs.branch }}
+          git push origin HEAD:${{ github.head_ref || github.ref_name }}
