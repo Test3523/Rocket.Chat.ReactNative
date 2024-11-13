@@ -87,6 +87,7 @@ jobs:
         if: steps.check_changes.outputs.changes == 'false' && steps.check-pr.outcome == 'success'  # Only run if no changes and PR is found
         uses: actions/github-script@v7
         with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const comment = `
               🚀 **Prettier Check Completed** 🚀
