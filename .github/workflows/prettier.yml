@@ -17,6 +17,7 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      statuses:read
 
     env:
       repo_owner: Test3523
