@@ -11,7 +11,7 @@ on:
 
 jobs:
   format:
-    if: github.repository == "RocketChat/Rocket.Chat.ReactNative"
+    if: github.repository == 'Test3523/Rocket.Chat.ReactNative'
     runs-on: ubuntu-latest
     permissions:
       contents: write
