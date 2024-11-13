@@ -10,7 +10,7 @@ if (__DEV__) {
 	require('./app/ReactotronConfig');
 } else {
 	console.log = () => {};
- 	console.time = () => {};
+	console.time = () => {};
 	console.timeLog = () => {};
 	console.timeEnd = () => {};
 	console.warn = () => {};
