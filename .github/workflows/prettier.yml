@@ -11,7 +11,7 @@ on:
 
 jobs:
   format:
-    if: github.repository != 'RocketChat/Rocket.Chat.ReactNative'
+    if: github.repository == github.event.repository.full_name
     runs-on: ubuntu-latest
     permissions:
       contents: write
