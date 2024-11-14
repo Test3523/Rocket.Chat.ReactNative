@@ -23,6 +23,10 @@ jobs:
       repo_owner: Test3523
 
     steps:
+      - name: Log github object
+        run: |
+          echo ${{ github }}
+          
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -61,54 +65,6 @@ jobs:
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Get current branch name
-        id: get-branch
-        if: steps.check_changes.outputs.changes == 'false'
-        run: echo "branch_name=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
-
-      - name: Check for associated PR in parent repository
-        id: check-pr
-        if: steps.check_changes.outputs.changes == 'false'
-        run: |
-          response=$(curl -s "https://api.github.com/repos/${{ env.repo_owner }}/Rocket.Chat.ReactNative/pulls?head=${{ github.actor }}:${{ env.branch_name }}&state=open")
-          
-          if [ "$(echo "$response" | jq 'type')" != '"array"' ] || [ "$(echo "$response" | jq length)" -eq 0 ]; then
-            echo "No open pull request associated with branch ${{ env.branch_name }}."
-            exit 1
-          fi
-
-          pr_number=$(echo "$response" | jq -r '.[0].number')
-          pr_url=$(echo "$response" | jq -r '.[0].html_url')
-
-          echo "pr_number=$pr_number" >> $GITHUB_ENV
-          echo "pr_url=$pr_url" >> $GITHUB_ENV
-
-      - name: Comment on PR if no changes
-        if: steps.check_changes.outputs.changes == 'false' && steps.check-pr.outcome == 'success'  # Only run if no changes and PR is found
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const comment = `
-              🚀 **Prettier Check Completed** 🚀
-
-              We have scanned your pull request, and after formatting the code with Prettier, no code format changes were detected. 🎉
-
-              This means your code is already in perfect shape and well-formatted! Keep it up! 👏
-
-              ✅ **Summary**:
-              - Prettier found no formatting issues.
-              - Your code is already properly formatted.
-            
-              Feel free to reach out if you have any questions or need further assistance.
-            `;
-            
-            github.rest.issues.createComment({
-              issue_number: ${{ github.event.pull_request.number }},
-              owner: "${{ github.repository_owner }}",
-              repo: context.repo.repo,
-              body: comment
-            });
       - name: Commit and push changes
         if: steps.check_changes.outputs.changes == 'true'
         run: |
