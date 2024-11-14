@@ -11,16 +11,13 @@ on:
 
 jobs:
   format:
-    if: github.repository == github.event.repository.full_name
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
       issues: write
       statuses: read
-
-    env:
-      repo_owner: Test3523
 
     steps:
       - name: Log github object
