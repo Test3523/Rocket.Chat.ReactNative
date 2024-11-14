@@ -17,14 +17,6 @@ jobs:
       statuses: read
 
     steps:
-      - name: Log github object
-        run: |
-          github_object='${{ toJson(github) }}'
-
-          echo "GitHub object:"
-
-          echo $github_object
-
       - name: Checkout code
         uses: actions/checkout@v2
         with:
