@@ -5,13 +5,10 @@ on:
     branches:
       - '*'
       - '!develop'
-  pull_request:
-    branches:
-      - '*'
 
 jobs:
   format:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
