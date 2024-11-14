@@ -25,8 +25,12 @@ jobs:
     steps:
       - name: Log github object
         run: |
-          echo ${{ github }}
-          
+          github_object='${{ toJson(github) }}'
+
+          echo "GitHub object:"
+
+          echo $github_object
+
       - name: Checkout code
         uses: actions/checkout@v2
         with:
