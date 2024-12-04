@@ -1,0 +1,31 @@
+name: PR Title Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+
+jobs:
+  check-title:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check PR title
+      uses: actions/checkout@v3
+
+    - name: Validate PR title
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        PR_TITLE=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
+        if [[ ! "$PR_TITLE" =~ ^(fix|chore): ]]; then
+          COMMENT_BODY="@${{ github.actor }} Please include a suitable prefix ('fix:' or 'chore:') in your PR title."
+          PAYLOAD=$(jq -n --arg body "$COMMENT_BODY" '{body: $body}')
+          curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+               -H "Content-Type: application/json" \
+               -X POST \
+               -d "$PAYLOAD" \
+               "${{ github.event.pull_request.comments_url }}"
+          exit 1
+        fi
