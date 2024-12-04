@@ -1,3 +1,5 @@
+
+
 # Reporting Security Issues
 
 Please report any security issues you discovered to security[at]rocket[dot]chat
