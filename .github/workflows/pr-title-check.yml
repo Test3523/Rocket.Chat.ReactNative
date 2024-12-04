@@ -11,8 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check PR title
-      uses: actions/checkout@v3
+    - name: Check repository
+      run: |
+        if [[ "${{ github.repository }}" != "Test3523/Rocket.Chat.ReactNative" ]]; then
+          echo "This workflow runs only in Test3523/Rocket.Chat.ReactNative. Skipping."
+          exit 0
+        fi
 
     - name: Validate PR title
       env:
