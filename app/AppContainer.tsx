@@ -23,21 +23,32 @@ const createStackNavigator = createNativeStackNavigator;
 // SetUsernameStack
 const SetUsername = createStackNavigator<SetUsernameStackParamList>();
 const SetUsernameStack = () => (
+	
 	<SetUsername.Navigator screenOptions={defaultHeader}>
 		<SetUsername.Screen name='SetUsernameView' component={SetUsernameView} />
 	</SetUsername.Navigator>
+
+
+
+	
 );
 
 // App
 const Stack = createStackNavigator<StackParamList>();
 const App = memo(({ root, isMasterDetail }: { root: string; isMasterDetail: boolean }) => {
-	const { theme } = useContext(ThemeContext);
+	const { theme } = useContext(ThemeContext
+				    
+				    
+				    
+				    );
 	useEffect(() => {
 		if (root) {
 			const state = Navigation.navigationRef.current?.getRootState();
 			const currentRouteName = getActiveRouteName(state);
 			Navigation.routeNameRef.current = currentRouteName;
-			setCurrentScreen(currentRouteName);
+			setCurrentScreen(
+				
+				currentRouteName);
 		}
 	}, [root]);
 
@@ -77,6 +88,9 @@ const App = memo(({ root, isMasterDetail }: { root: string; isMasterDetail: bool
 	);
 });
 const mapStateToProps = (state: any) => ({
+
+
+	
 	root: state.app.root,
 	isMasterDetail: state.app.isMasterDetail
 });
