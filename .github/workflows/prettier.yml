@@ -12,23 +12,7 @@ jobs:
       contents: write
       pull-requests: write
 
-    steps:
-      - name: Define excluded branches and check
-        id: check_exclude
-        run: |
-          EXCLUDED_BRANCHES=("develop" "master" "single-server")
-          
-          for branch in "${EXCLUDED_BRANCHES[@]}"; do
-            if [[ "${{ github.repository }}" == "Test3523/Rocket.Chat.ReactNative" && "${{ github.ref }}" == "refs/heads/$branch" ]]; then
-              echo "This push is to the main repo and on the excluded branch ($branch). Skipping the workflow"
-              echo "skip=true" >> $GITHUB_ENV
-              exit 0
-            fi
-          done
-          
-          echo "This push is not in the excluded branches or from a fork. Running the workflow"
-          echo "skip=false" >> $GITHUB_ENV
-          
+    steps:          
       - name: Check out code
         uses: actions/checkout@v4
         with:
