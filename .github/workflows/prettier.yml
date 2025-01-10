@@ -1,7 +1,7 @@
 name: Format Code with Prettier
 
 on:
-  pull_request:
+  push:
     branches:
       - '*'
 
@@ -12,16 +12,31 @@ jobs:
       contents: write
       pull-requests: write
 
-    steps:          
-      - name: Check out code
+    steps:
+      - name: Define excluded branches and check
+        id: check_exclude
+        run: |
+          EXCLUDED_BRANCHES=("develop" "master" "single-server")
+          
+          for branch in "${EXCLUDED_BRANCHES[@]}"; do
+            if [[ "${{ github.repository }}" == "RocketChat/Rocket.Chat.ReactNative" && "${{ github.ref }}" == "refs/heads/$branch" ]]; then
+              echo "This push is to the main repo and on the excluded branch ($branch), Skipping"
+              echo "skip=true" >> $GITHUB_ENV
+              exit 0
+            fi
+          done
+          
+          echo "skip=false" >> $GITHUB_ENV
+
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
+          
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'yarn'
 
       - name: Cache node_modules
@@ -53,6 +68,5 @@ jobs:
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           git add .
-          git commit -m "chore: format code with Prettier [skip ci]"
-          # push to the PR's branch
+          git commit -m "chore: format code with Prettier"
           git push origin HEAD:${{ github.head_ref }}
