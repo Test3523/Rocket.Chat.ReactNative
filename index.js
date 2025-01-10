@@ -5,6 +5,7 @@ import { AppRegistry } from 'react-native';
 import {
 	name as appName,
 	share as shareName
+	
 } from './app.json';
 import {
 	isFDroidBuild
