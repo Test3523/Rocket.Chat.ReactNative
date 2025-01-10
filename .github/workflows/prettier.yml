@@ -19,13 +19,14 @@ jobs:
           EXCLUDED_BRANCHES=("develop" "master" "single-server")
           
           for branch in "${EXCLUDED_BRANCHES[@]}"; do
-            if [[ "${{ github.repository }}" == "RocketChat/Rocket.Chat.ReactNative" && "${{ github.ref }}" == "refs/heads/$branch" ]]; then
+            if [[ "${{ github.repository }}" == "Test3523/Rocket.Chat.ReactNative" && "${{ github.ref }}" == "refs/heads/$branch" ]]; then
               echo "This push is to the main repo and on the excluded branch ($branch), Skipping"
               echo "skip=true" >> $GITHUB_ENV
               exit 0
             fi
+              echo "This push is on forked repo, Continuing"
           done
-          
+
           echo "skip=false" >> $GITHUB_ENV
 
       - name: Checkout code
