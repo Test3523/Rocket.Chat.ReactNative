@@ -6,7 +6,9 @@ import {
 	name as appName,
 	share as shareName
 	
-} from './app.json';
+} 
+	
+	from './app.json';
 import {
 	isFDroidBuild
        } from './app/lib/constants';
