@@ -1,16 +1,16 @@
 export interface ITimestampRange {
 	$gt?: {
-        $date: string
-    };
+		$date: string;
+	};
 	$lt?: {
-        $date: string
-    };
+		$date: string;
+	};
 	$gte?: {
-        $date: string
-    };
+		$date: string;
+	};
 	$lte?: {
-        $date: string
-    };
+		$date: string;
+	};
 }
 
 export interface IDeleteMessageBulkParams {
