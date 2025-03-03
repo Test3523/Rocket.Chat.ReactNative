@@ -1,18 +1,18 @@
 export interface ITimestampRange {
-	$gt?: { $date: string }
+	$gt?: { $date: string };
 	$lt?: {
-        $date: string
-    };
+		$date: string;
+	};
 	$gte?: {
-        $date: string
-    };
+		$date: string;
+	};
 	$lte?: {
-        $date: string
-    };
+		$date: string;
+	};
 }
 
 export interface IDeleteMessageBulkParams {
-	rid: string
+	rid: string;
 	ts?: ITimestampRange;
 	users: string[];
 	excludePinned?: boolean;
