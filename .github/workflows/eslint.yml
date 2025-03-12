@@ -27,21 +27,20 @@ jobs:
         run: |
           FILES=$(git diff --name-only --diff-filter=ACM ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- '*.ts' '*.tsx' '*.js' '*.jsx')
           echo "FILES=$(echo "$FILES" | tr '\n' ' ')" >> $GITHUB_ENV
-
           echo "Changed lines:"
           > changed-lines.txt
           for file in $FILES; do
             echo "🔎 Diff for file: $file"
             git diff -U0 ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- $file
-      
+            
             git diff -U0 ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- $file | \
-            grep -oP '(?<=^@@ -\d+(,\d+)? \+)\d+(?=(,\d+)?)' | while read line; do
-              echo "$file:$line" >> changed-lines.txt
-            done
+            awk '/^@@ -[0-9,]+ \+[0-9,]+ @@/ {
+              match($0, /\+([0-9]+)/, arr);
+              if (arr[1]) print "'$file':" arr[1];
+            }' >> changed-lines.txt
           done
-      
+          
           cat changed-lines.txt
-
 
       - name: Run ESLint on modified files (JSON format)
         if: env.FILES != ''
