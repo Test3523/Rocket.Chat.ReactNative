@@ -42,7 +42,7 @@ jobs:
       - name: Run ESLint on modified files (JSON format)
         if: env.FILES != ''
         run: |
-          yarn eslint $FILES --format json > eslint-results.json || true
+          npx eslint $FILES --format json > eslint-results.json || true
 
       - name: Add inline PR comments for ESLint issues
         if: env.FILES != ''
