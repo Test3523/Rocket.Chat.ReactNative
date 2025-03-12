@@ -45,6 +45,7 @@ jobs:
           npx eslint $FILES --format json > eslint-results.json || true
           echo "### ESLint Output:"
           cat eslint-results.json
+          cat changed-lines.txt
 
       - name: Add ESLint comments to PR
         uses: actions/github-script@v7
