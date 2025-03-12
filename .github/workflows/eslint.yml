@@ -43,6 +43,8 @@ jobs:
         if: env.FILES != ''
         run: |
           npx eslint $FILES --format json > eslint-results.json || true
+          echo "### ESLint Output:"
+          cat eslint-results.json
 
       - name: Add inline PR comments for ESLint issues
         if: env.FILES != ''
