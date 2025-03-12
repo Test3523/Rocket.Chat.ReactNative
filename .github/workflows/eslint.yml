@@ -46,18 +46,17 @@ jobs:
           echo "### ESLint Output:"
           cat eslint-results.json
 
-      - name: Add inline PR comments for ESLint issues
-        if: env.FILES != ''
+      - name: Add ESLint comments to PR
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const path = require('path');
-
+      
             // Read ESLint results
             const results = JSON.parse(fs.readFileSync('eslint-results.json', 'utf8'));
-
+      
             // Read modified line ranges
             const changedLinesByFile = {};
             const changedLines = fs.readFileSync('changed-lines.txt', 'utf8').trim().split('\n');
@@ -68,24 +67,42 @@ jobs:
               }
               changedLinesByFile[file].add(Number(lineNumber));
             }
-
+      
             const pullRequest = context.payload.pull_request;
             const repo = context.repo;
-
+            const commitId = pullRequest.head.sha; // Use the HEAD commit ID
+      
             for (const result of results) {
               const filePath = path.relative(process.cwd(), result.filePath);
-
+      
               if (!changedLinesByFile[filePath]) continue;
-
+      
               for (const message of result.messages) {
                 if (message.line && changedLinesByFile[filePath].has(message.line)) {
+                  // Find the diff position
+                  const diff = await github.rest.repos.getContent({
+                    owner: repo.owner,
+                    repo: repo.repo,
+                    path: filePath,
+                    ref: commitId
+                  });
+      
+                  const fileContent = Buffer.from(diff.data.content, 'base64').toString('utf8');
+                  const lines = fileContent.split('\n');
+      
+                  let position = 0;
+                  for (let i = 0; i < message.line; i++) {
+                    position += lines[i] ? lines[i].length + 1 : 1;
+                  }
+      
                   await github.rest.pulls.createReviewComment({
                     owner: repo.owner,
                     repo: repo.repo,
                     pull_number: pullRequest.number,
+                    commit_id: commitId,
                     body: `**${message.ruleId || 'ESLint'}:** ${message.message}`,
                     path: filePath,
-                    line: message.line
+                    position
                   });
                 }
               }
