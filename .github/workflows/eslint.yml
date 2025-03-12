@@ -27,7 +27,7 @@ jobs:
         id: changed-files
         run: |
           FILES=$(git diff --name-only --diff-filter=ACM ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- '*.ts' '*.tsx' '*.js' '*.jsx')
-          echo "FILES=$FILES" >> $GITHUB_ENV
+          echo "FILES=$(echo "$FILES" | tr '\n' ' ')" >> $GITHUB_ENV
 
           echo "Changed lines:"
           > changed-lines.txt
