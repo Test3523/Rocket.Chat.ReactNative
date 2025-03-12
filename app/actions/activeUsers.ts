@@ -11,7 +11,7 @@ export type TActionActiveUsers = ISetActiveUsers;
 
 export const setActiveUsers = (activeUsers: IActiveUsers): ISetActiveUsers => ({
 	type: ACTIVE_USERS.SET,
-	activeUsers
+	activeUsers,
 });
 
 export const clearActiveUsers = (): Action => ({
