@@ -1,0 +1,89 @@
+name: ESLint on PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  eslint:
+    name: Run ESLint on modified files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Get changed files and lines
+        id: changed-files
+        run: |
+          FILES=$(git diff --name-only --diff-filter=ACM ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- '*.ts' '*.tsx' '*.js' '*.jsx')
+          echo "FILES=$FILES" >> $GITHUB_ENV
+
+          echo "Changed lines:"
+          > changed-lines.txt
+          for file in $FILES; do
+            git diff -U0 ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- $file | grep -oP '(?<=^@@ -\d+(,\d+)? \+)\d+(?=(,\d+)?)' | while read line; do
+              echo "$file:$line" >> changed-lines.txt
+            done
+          done
+          cat changed-lines.txt
+
+      - name: Run ESLint on modified files (JSON format)
+        if: env.FILES != ''
+        run: |
+          yarn eslint $FILES --format json > eslint-results.json || true
+
+      - name: Add inline PR comments for ESLint issues
+        if: env.FILES != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Read ESLint results
+            const results = JSON.parse(fs.readFileSync('eslint-results.json', 'utf8'));
+
+            // Read modified line ranges
+            const changedLinesByFile = {};
+            const changedLines = fs.readFileSync('changed-lines.txt', 'utf8').trim().split('\n');
+            for (const line of changedLines) {
+              const [file, lineNumber] = line.split(':');
+              if (!changedLinesByFile[file]) {
+                changedLinesByFile[file] = new Set();
+              }
+              changedLinesByFile[file].add(Number(lineNumber));
+            }
+
+            const pullRequest = context.payload.pull_request;
+            const repo = context.repo;
+
+            for (const result of results) {
+              const filePath = path.relative(process.cwd(), result.filePath);
+
+              if (!changedLinesByFile[filePath]) continue;
+
+              for (const message of result.messages) {
+                if (message.line && changedLinesByFile[filePath].has(message.line)) {
+                  await github.rest.pulls.createReviewComment({
+                    owner: repo.owner,
+                    repo: repo.repo,
+                    pull_number: pullRequest.number,
+                    body: `**${message.ruleId || 'ESLint'}:** ${message.message}`,
+                    path: filePath,
+                    line: message.line
+                  });
+                }
+              }
+            }
