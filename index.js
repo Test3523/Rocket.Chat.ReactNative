@@ -4,15 +4,12 @@ import { AppRegistry } from 'react-native';
 
 import { name as appName, share as shareName } from './app.json';
 import { isFDroidBuild } from './app/lib/constants';
-import { isAndroid
-       } from './app/lib/methods/helpers';
+import { isAndroid } from './app/lib/methods/helpers';
 
 if (__DEV__) {
 	require('./app/ReactotronConfig');
 } else {
-	console.log = (
-		
-	) => {};
+	console.log = () => {};
 	console.time = () => {};
 	console.timeLog = () => {};
 	console.timeEnd = () => {};
