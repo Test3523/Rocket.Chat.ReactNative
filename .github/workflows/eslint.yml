@@ -23,21 +23,25 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Get changed files and lines
-        id: changed-files
+      - name: Get Changed Files and Lines
         run: |
           FILES=$(git diff --name-only --diff-filter=ACM ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- '*.ts' '*.tsx' '*.js' '*.jsx')
           echo "FILES=$(echo "$FILES" | tr '\n' ' ')" >> $GITHUB_ENV
-
+      
           echo "Changed lines:"
           > changed-lines.txt
           for file in $FILES; do
-            git diff -U0 ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- $file | 
-              sed -n 's/^@@ -[0-9,]* \+\([0-9]*\).*/\1/p' | while read line; do
-                echo "$file:$line" >> changed-lines.txt
-              done
+            echo "🔎 Diff for file: $file"
+            git diff -U0 ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- $file
+      
+            git diff -U0 ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- $file | \
+            grep -oP '(?<=^@@ -\d+(,\d+)? \+)\d+(?=(,\d+)?)' | while read line; do
+              echo "$file:$line" >> changed-lines.txt
+            done
           done
+      
           cat changed-lines.txt
+
 
       - name: Run ESLint on modified files (JSON format)
         if: env.FILES != ''
