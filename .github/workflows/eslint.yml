@@ -32,9 +32,10 @@ jobs:
           echo "Changed lines:"
           > changed-lines.txt
           for file in $FILES; do
-            git diff -U0 ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- $file | grep -oP '(?<=^@@ -\d+(,\d+)? \+)\d+(?=(,\d+)?)' | while read line; do
-              echo "$file:$line" >> changed-lines.txt
-            done
+            git diff -U0 ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} -- $file | 
+              sed -n 's/^@@ -[0-9,]* \+\([0-9]*\).*/\1/p' | while read line; do
+                echo "$file:$line" >> changed-lines.txt
+              done
           done
           cat changed-lines.txt
 
